@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from entradas.excepciones import LimiteEntradasExcedidoError
 
 class ServicioCompraEntradas:
     """Clase de la Capa de Lógica de Negocio (Service)."""
@@ -33,3 +34,17 @@ class ServicioCompraEntradas:
         Será implementado en fase GREEN.
         """
         raise NotImplementedError("Método pendiente de implementación en fase GREEN")
+    
+    def _validar_cantidad(self, cantidad, visitantes):
+        """
+        Valida que no se compren más de 10 entradas, que sea una cantidad positiva y que la cantidad coincida con los visitantes
+        """
+
+        if cantidad <= 0:
+            raise ValueError("La cantidad de entradas debe ser al menos 1.")
+        
+        if cantidad > 10:
+            raise LimiteEntradasExcedidoError("La cantidad de entradas no puede ser mayor a 10.")
+        
+        if cantidad != len(visitantes):
+            raise ValueError("La cantidad de entradas debe ser igual al nro de visitantes.")
