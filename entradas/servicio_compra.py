@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from entradas.excepciones import LimiteEntradasExcedidoError
+from entradas.excepciones import LimiteEntradasExcedidoError, ParqueCerradoError
+from datetime import datetime, timedelta
 
 class ServicioCompraEntradas:
     """Clase de la Capa de Lógica de Negocio (Service)."""
@@ -48,3 +49,21 @@ class ServicioCompraEntradas:
         
         if cantidad != len(visitantes):
             raise ValueError("La cantidad de entradas debe ser igual al nro de visitantes.")
+        
+        return True
+        
+    def _validar_fecha_hora_visita(self, fecha):
+        """
+        Valida que la fecha sea en un dia donde el parque esté abierto (ni lunes, ni feriados como navidad o año nuevo),
+        que se compre durante horario habilitado
+        """
+        dia_fecha = fecha.weekday()
+        navidad = datetime(fecha.year, month=12, day=25) + timedelta(hours=fecha.hour, minutes=fecha.minute, seconds=fecha.second)
+        anio_nuevo = datetime(fecha.year, month=1, day=1) + timedelta(hours=fecha.hour, minutes=fecha.minute, seconds=fecha.second)
+        hora_fecha = fecha.hour
+
+        if fecha == navidad or fecha == anio_nuevo or dia_fecha == 0 or hora_fecha < 9 or hora_fecha >= 19:
+            raise ParqueCerradoError
+
+        if fecha < datetime.now():
+            raise ValueError

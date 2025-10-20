@@ -1,7 +1,5 @@
 import pytest
-import datetime
-from datetime import timedelta
-from datetime import date
+from datetime import date, datetime, timedelta
 from unittest.mock import MagicMock, Mock
 
 # Importar las clases y excepciones (asumiendo que existen en el modelo)
@@ -112,7 +110,7 @@ def test_validar_cantidad_limite_exacto_10_pasa(servicio_compra):
 # --- Pruebas unitarias: Validación de fecha y hora ---
 
 def test_validar_fecha_dia_habil_pasa(servicio_compra):
-    fecha_habil = datetime(2025, 10, 22, 12, 0, 0)  # Miércoles
+    fecha_habil = datetime(2025, 11, 19, 12, 0, 0)  # Miércoles
     try:
         servicio_compra._validar_fecha_hora_visita(fecha_habil)
     except ParqueCerradoError:
@@ -146,7 +144,7 @@ def test_validar_fecha_lunes_feriado_falla(servicio_compra):
 def test_validar_horario_antes_de_abrir_falla(servicio_compra):
     fecha_valida = datetime(2025, 10, 22, 8, 59, 59)
     with pytest.raises(ParqueCerradoError):
-        servicio_compra._validar_fecha_visita(fecha_valida)
+        servicio_compra._validar_fecha_hora_visita(fecha_valida)
 
 
 def test_validar_horario_al_abrir_pasa(servicio_compra):
@@ -177,6 +175,17 @@ def test_validar_horario_al_cerrar_falla(servicio_compra):
     fecha_valida = datetime(2025, 10, 22, 19, 0, 0)
     with pytest.raises(ParqueCerradoError):
         servicio_compra._validar_fecha_hora_visita(fecha_valida)
+
+def test_validar_fecha_pasada_falla(servicio_compra):
+    fecha_pasada = datetime(2024, 10, 22, 12, 0, 0) 
+
+    with pytest.raises(ValueError) as excinfo:
+        servicio_compra._validar_fecha_hora_visita(fecha_pasada)
+
+def test_validar_fecha_futura_pasa(servicio_compra):
+    fecha_futura = datetime(2026, 10, 22, 12, 0, 0)
+
+    servicio_compra._validar_fecha_hora_visita(fecha_futura)
 
 
 # --- PRUEBAS RED: Cálculo de Precios y Montos ---
