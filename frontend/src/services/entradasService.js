@@ -8,25 +8,34 @@ export const entradasService = {
   // Compras
   getCompras: () => api.get('/compras/'),
   getCompraById: (id) => api.get(`/compras/${id}/`),
-  createCompra: (compraData) => api.post('/compras/', compraData),
+  createCompra: (compraData) => {
+    // Agregar usuario por defecto (ID 1 para desarrollo)
+    const compraConUsuario = {
+      ...compraData,
+      usuario: 2  // Usuario demo
+    };
+    return api.post('/compras/', compraConUsuario);
+  },
   updateCompra: (id, compraData) => api.put(`/compras/${id}/`, compraData),
   deleteCompra: (id) => api.delete(`/compras/${id}/`),
 
   // Entradas
   getEntradas: () => api.get('/entradas/'),
   getEntradaById: (id) => api.get(`/entradas/${id}/`),
+  createEntrada: (entradaData) => api.post('/entradas/', entradaData),
 };
 
 // Servicio para procesar compras con la lógica de negocio
 export const servicioCompra = {
   procesarCompra: async (datosCompra) => {
     try {
-      // Primero crear la compra
+      // Primero crear la compra con usuario
       const compraResponse = await entradasService.createCompra({
         fecha_visita: datosCompra.fecha,
         forma_pago: datosCompra.formaPago === 'tarjeta' ? 'TAR' : 'EFE',
         monto_total: datosCompra.total,
         estado_pago: 'PEN'
+        // El usuario se agrega automáticamente en createCompra
       });
 
       const compra = compraResponse.data;
