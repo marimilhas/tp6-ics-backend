@@ -48,7 +48,12 @@ class ServicioCompraEntradas:
         
         """
 
-        
+        suma = 0
+
+        for visitante in visitantes:
+            suma += self._calcular_precio_entrada(visitante["edad"], visitante["tipo_pase"])
+
+        return suma
     
     def _validar_cantidad(self, cantidad, visitantes):
         """
