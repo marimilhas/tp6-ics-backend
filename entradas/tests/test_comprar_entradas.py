@@ -14,7 +14,7 @@ from entradas.servicio_compra import ServicioCompraEntradas
 #    return Sistema()
 
 
-pytest.fixture
+@pytest.fixture
 def usuario_valido_mock():
     """Retorna un mock que simula un objeto Usuario ya cargado y válido."""
     return Mock(nombre="Juan Pérez", email="juan@example.com", esta_registrado=True)
