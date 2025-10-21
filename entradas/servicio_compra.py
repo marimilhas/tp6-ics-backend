@@ -25,14 +25,27 @@ class ServicioCompraEntradas:
     def _calcular_precio_entrada(self, edad: int, tipo_pase: str) -> float:
         """
         Calculará el precio de una entrada según edad y tipo de pase.
-        Será implementado en fase GREEN.
+        
         """
-        raise NotImplementedError("Método pendiente de implementación en fase GREEN")
+        costo = 0
+        #Asigna según tipo de entrada
+        if tipo_pase == 'Regular':
+            costo = 5000
+        elif tipo_pase == 'VIP':
+            costo = 10000
+
+        #Modifica segun edad
+        if edad < 3:
+            costo = 0
+        elif edad < 10 or edad > 60:
+            costo *= 0.5
+        
+        return costo
 
     def _calcular_monto_total(self, visitantes: list) -> float:
         """
         Calculará el monto total sumando todos los precios individuales.
-        Será implementado en fase GREEN.
+        
         """
         raise NotImplementedError("Método pendiente de implementación en fase GREEN")
     
