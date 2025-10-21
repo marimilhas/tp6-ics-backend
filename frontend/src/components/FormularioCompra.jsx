@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { entradasService } from "../services/entradasService";
+import { useCompraEntradas } from "../hooks/useCompraEntradas";
 
 const FormularioCompra = ({ onCompra }) => {
+  const { procesarCompra, loading, error } = useCompraEntradas();
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [cantidad, setCantidad] = useState(1);
@@ -11,7 +14,21 @@ const FormularioCompra = ({ onCompra }) => {
   const [errores, setErrores] = useState({});
   const [camposModificados, setCamposModificados] = useState({});
   const [formularioValido, setFormularioValido] = useState(false);
-  
+  const [pasesDisponibles, setPasesDisponibles] = useState([]);
+
+  // Cargar pases disponibles del backend
+  useEffect(() => {
+    const cargarPases = async () => {
+      try {
+        const response = await entradasService.getPases();
+        setPasesDisponibles(response.data);
+      } catch (error) {
+        console.error('Error cargando pases:', error);
+      }
+    };
+    cargarPases();
+  }, []);
+
   // Horario del parque
   const HORA_APERTURA = 9;
   const HORA_CIERRE = 19;
@@ -254,15 +271,22 @@ const FormularioCompra = ({ onCompra }) => {
     return opciones;
   };
 
-  // CORREGIDO: Función para calcular precio individual según edad y tipo
+  //Función para calcular precio individual según edad y tipo
   const calcularPrecioIndividual = (edad, tipo) => {
-    if (edad < 3) return 0; // Menores de 3 no pagan (0, 1, 2 años)
-    if (edad < 10) return PRECIOS[tipo] * 0.5; // Menores de 10: 3-9 años (mitad)
-    if (edad > 60) return PRECIOS[tipo] * 0.5; // Mayores de 60: 60+ años (mitad), es decir a partir de los 61 se aplica el descuento
-    return PRECIOS[tipo]; // Precio completo: 10-59 años
+    // Buscar el pase en los datos del backend
+    const pase = pasesDisponibles.find(p => 
+      p.nombre.toLowerCase().includes(tipo.toLowerCase())
+    );
+    
+    if (!pase) return 0;
+
+    if (edad < 3) return 0; // Menores de 3 no pagan
+    if (edad < 10) return pase.precio * 0.5; // Menores de 10: 50% descuento
+    if (edad > 60) return pase.precio * 0.5; // Mayores de 60: 50% descuento
+    return pase.precio; // Precio completo
   };
 
-  // CORREGIDO: Obtener categoría por edad con información de precio
+  // Obtener categoría por edad con información de precio
   const obtenerCategoriaEdad = (edad, tipoEntrada) => {
     const precio = calcularPrecioIndividual(edad, tipoEntrada);
     
@@ -323,7 +347,7 @@ const FormularioCompra = ({ onCompra }) => {
     return dias[fecha.getDay()];
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validarFormularioCompleto()) {
@@ -336,26 +360,46 @@ const FormularioCompra = ({ onCompra }) => {
         mail: true
       });
       return;
-    }
-    
-    const compraData = {
-      fecha,
-      hora,
-      cantidad,
-      edades,
-      tiposEntrada,
-      formaPago,
-      mail,
-      total: calcularTotal()
-    };
-    
-    if (onCompra) {
-      onCompra(compraData);
+  }
+
+    try {
+      // Calcular precios individuales
+      const preciosIndividuales = edades.map((edad, index) => 
+        calcularPrecioIndividual(edad, tiposEntrada[index])
+      );
+
+      const datosCompra = {
+        fecha,
+        hora,
+        cantidad,
+        edades,
+        tiposEntrada,
+        formaPago,
+        mail,
+        total: calcularTotal(),
+        preciosIndividuales
+      };
+
+      const resultado = await procesarCompra(datosCompra);
+      
+      if (onCompra) {
+        onCompra(resultado.compra, resultado.mensajeMail);
+      }
+    } catch (error) {
+      console.error('Error en el formulario:', error);
+      // El error ya está manejado en el hook
     }
   };
 
-  return (
+return (
     <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-8 border border-color-lime-green">
+      {/* Mostrar error de API */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 font-medium">{error}</p>
+        </div>
+      )}
+
       <h2 className="text-3xl font-bold text-color-dark-green mb-8 text-center">
         Comprar Entradas
       </h2>
@@ -716,14 +760,22 @@ const FormularioCompra = ({ onCompra }) => {
         <div>
           <button
             type="submit"
-            disabled={!formularioValido}
+            disabled={!formularioValido || loading}
             className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all duration-300 transform ${
-              formularioValido 
+              formularioValido && !loading
                 ? 'bg-gradient-to-r from-color-medium-green to-color-light-green hover:from-color-dark-green hover:to-color-medium-green text-white hover:scale-[1.02] hover:shadow-xl' 
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
           >
-            {formularioValido ? (
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Procesando compra...</span>
+              </div>
+            ) : formularioValido ? (
               <div className="flex items-center justify-center gap-2">
                 <span>Continuar al Resumen</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

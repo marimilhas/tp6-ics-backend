@@ -11,6 +11,7 @@ function App() {
   const [compra, setCompra] = useState(null);
   const [mensajeMail, setMensajeMail] = useState("");
   const [pasoActual, setPasoActual] = useState("formulario");
+  const [procesandoPago, setProcesandoPago] = useState(false);
 
   const manejarCompraExitosa = (compraData, mailMsg) => {
     setCompra(compraData);
@@ -18,21 +19,27 @@ function App() {
     setPasoActual("resumen");
   };
 
-  const manejarConfirmacion = () => {
-  // Simular envío de email y pago
-  console.log("Enviando email de confirmación...");
-  
-  if (compra && compra.forma_pago === 'tarjeta') {
-    console.log("Redirigiendo a Mercado Pago...");
-    // Aquí simularías la redirección a Mercado Pago
-    // window.location.href = "https://mercadopago.com/checkout";
-  }
-  
-  // Simular éxito después de un breve delay
-  setTimeout(() => {
-    setPasoActual("confirmacion");
-  }, 1000);
-};
+  const manejarConfirmacion = async () => {
+    setProcesandoPago(true);
+    
+    try {
+      // Aquí integrarías con Mercado Pago si es pago con tarjeta
+      if (compra && compra.forma_pago === 'TAR') {
+        console.log("Integrando con Mercado Pago...");
+        // Redirigir a Mercado Pago o procesar pago
+        // await mercadoPagoService.procesarPago(compra);
+      }
+      
+      // Simular éxito después de un breve delay
+      setTimeout(() => {
+        setPasoActual("confirmacion");
+        setProcesandoPago(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error en confirmación:', error);
+      setProcesandoPago(false);
+    }
+  };
 
   const manejarNuevaCompra = () => {
     setCompra(null);
@@ -122,14 +129,26 @@ function App() {
               <button
                 onClick={() => setPasoActual("formulario")}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow transition-all"
+                disabled={procesandoPago}
               >
                 ← Volver Atrás
               </button>
               <button
                 onClick={manejarConfirmacion}
-                className="bg-color-medium-green hover:bg-color-dark-green text-white font-semibold py-3 px-6 rounded-lg shadow transition-all"
+                disabled={procesandoPago}
+                className="bg-color-medium-green hover:bg-color-dark-green text-white font-semibold py-3 px-6 rounded-lg shadow transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Confirmar Compra →
+                {procesandoPago ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Procesando...
+                  </div>
+                ) : (
+                  'Confirmar Compra →'
+                )}
               </button>
             </div>
           </div>
