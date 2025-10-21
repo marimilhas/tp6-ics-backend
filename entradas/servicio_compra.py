@@ -47,7 +47,8 @@ class ServicioCompraEntradas:
         Calculará el monto total sumando todos los precios individuales.
         
         """
-        raise NotImplementedError("Método pendiente de implementación en fase GREEN")
+
+        
     
     def _validar_cantidad(self, cantidad, visitantes):
         """

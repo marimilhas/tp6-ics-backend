@@ -355,7 +355,7 @@ def test_calcular_monto_total_limites_edad(servicio_compra):
         {"edad": 61, "tipo_pase": "Regular"},  # Límite inferior Tercera Edad   -> $2500 (50% de 5k)
     ]
     monto_total = servicio_compra._calcular_monto_total(visitantes)
-    assert monto_total == 30000  # 0 + 0 + 2500 + 5000 + 5000 + 10000 + 2500 + 5000
+    assert monto_total == 25000  # 0 + 0 + 2500 + 5000 + 5000 + 10000 + 2500
 
 def test_calcular_monto_total_mezcla_extrema(servicio_compra):
     """Prueba RED: mezcla extrema de edades y tipos de pase"""
