@@ -3,6 +3,10 @@ class LimiteEntradasExcedidoError(Exception):
     """Lanzada cuando la cantidad de entradas supera el límite de 10."""
     pass
 
+class Usuario:
+    # Definición mínima para que el mock funcione sin error
+    pass
+
 # Excepciones que usaremos en futuros tests
 class UsuarioNoRegistradoError(Exception):
     pass
@@ -16,6 +20,13 @@ class FechaInvalidaError(Exception):
 class FormaDePagoRequeridaError(Exception):
     pass
 
+class EdadInvalidaError(Exception):
+    pass
+
+class PagoRechazadoError(Exception):
+    """Para cuando la pasarela de pagos rechaza una transacción."""
+    pass
+
 class PermissionError(Exception):
     """Para cuando el usuario no tiene permisos"""
     pass
@@ -25,5 +36,9 @@ class TimeoutError(Exception):
     pass
 
 class ConnectionError(Exception):
+    """Para errores de conexión"""
+    pass
+
+class EmailError(Exception):
     """Para errores de conexión"""
     pass
